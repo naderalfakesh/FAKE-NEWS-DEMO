@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Fake news detection demo</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+<!--===============================================================================================-->
+	<link rel="icon" type="image/png" href="images/icons/favicon.ico"/>
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/bootstrap/css/bootstrap.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="fonts/font-awesome-4.7.0/css/font-awesome.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="fonts/Linearicons-Free-v1.0.0/icon-font.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/animate/animate.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/css-hamburgers/hamburgers.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/select2/select2.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="css/util.css">
+	<link rel="stylesheet" type="text/css" href="css/main.css">
+<!--===============================================================================================-->
+
+</head>
+<body>
+
+
+	<div class="container-contact100" id="app" style="background-image: url('images/bg-01.jpg');">
+		<div class="wrap-contact100">
+			<form class="contact100-form validate-form">
+				<span class="contact100-form-title">
+					<img src="./1.png" alt="Logo" width="250" >
+				</span>
+				<div class="wrap-input100">
+					<span class="label-input100">News title</span>
+					<input v-model="title" class="input100" type="text" name="web" placeholder="Haber başlığı">
+				</div>
+
+				<div class="wrap-input100 validate-input" data-validate = "Message is required">
+					<span class="label-input100">Message</span>
+					<textarea v-model="text" class="input100" name="message" placeholder="Haber metni ..."></textarea>
+				</div>
+
+				<div class="container-contact100-form-btn">
+					<div class="wrap-contact100-form-btn">
+						<div class="contact100-form-bgbtn"></div>
+						<button @click.prevent="prediction()" class="contact100-form-btn">
+							Predict
+						</button>
+					</div>
+				</div>
+				<div class="container-contact100-form-btn2">
+					<div class="wrap-contact100-form-btn">
+						<div class="contact100-form-bgbtn"></div>
+						<button @click.prevent="getfakes()" class="btn btn-danger">
+							www.npr.org fake news
+						</button>
+					</div>
+					<div class="wrap-contact100-form-btn">
+						<div class="contact100-form-bgbtn"></div>
+						<button @click.prevent="getreals()" class="btn btn-success">
+							www.bbc.com real news
+						</button>
+					</div>
+				</div>
+				
+
+				<table V-if="sonuc != null" class="table table-bordered ">
+					<thead>
+						<tr>
+						<th scope="col">Model</th>
+						<th scope="col">Sonuç</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<th scope="row">MultinomialNB</th>
+						<td v-bind:class="[sonuc.MultinomialNB==1 ? 'bg-primary' : 'bg-danger']" class="text-white">{{sonuc.MultinomialNB | explain}}</td>
+					</tr>
+					<tr>
+						<th scope="row">SGD </th>
+						<td v-bind:class="[sonuc.SGDClassifier==1 ? 'bg-primary' : 'bg-danger']" class="text-white">{{sonuc.SGDClassifier | explain}}</td>
+					</tr>
+					<tr>
+						<th scope="row">LogisticRegression</th>
+						<td v-bind:class="[sonuc.LogisticRegression==1 ? 'bg-primary' : 'bg-danger']" class="text-white">{{sonuc.LogisticRegression | explain}}</td>
+					</tr>
+					<tr>
+						<th scope="row">RandomForest </th>
+						<td v-bind:class="[sonuc.RandomForestClassifier==1 ? 'bg-primary' : 'bg-danger']" class="text-white">{{sonuc.RandomForestClassifier | explain}}</td>
+					</tr>
+					<tr>
+						<th scope="row">SVC</th>
+						<td v-bind:class="[sonuc.SVC==1 ? 'bg-primary' : 'bg-danger']" class="text-white">{{sonuc.SVC | explain}}</td>
+					</tr>
+					<tr>
+						<th scope="row">XGB </th>
+						<td v-bind:class="[sonuc.XGBClassifier==1 ? 'bg-primary' : 'bg-danger']" class="text-white">{{sonuc.XGBClassifier | explain}}</td>
+					</tr>
+					<tr>
+						<th scope="row">KNeighbors </th>
+						<td v-bind:class="[sonuc.KNeighborsClassifier==1 ? 'bg-primary' : 'bg-danger']" class="text-white">{{sonuc.KNeighborsClassifier | explain}}</td>
+					</tr>
+					<tr>
+						<th scope="row">Toplam </th>
+						<td >{{toplam()}}</td>
+					</tr>
+					</tbody>
+				</table>
+
+
+
+				<table V-if="fakenews != null" class="table table-bordered ">
+						<thead>
+							<tr>
+								<th scope="row">MultinomialNB</th>
+								<th scope="row">SGD </th>
+								<th scope="row">LogisticRegression</th>
+								<th scope="row">RandomForest </th>
+								<th scope="row">SVC</th>
+								<th scope="row">XGB </th>
+								<th scope="row">KNeighbors </th>
+								<th scope="row">Toplam </th>
+							</tr>
+					</thead>
+					<tbody>
+						<tr v-for="news in fakenews">
+							<td v-bind:class="[news.MultinomialNB==1 ? 'bg-primary' : 'bg-danger']" class="text-white">{{news.MultinomialNB | explain}}</td>
+							<td v-bind:class="[news.SGDClassifier==1 ? 'bg-primary' : 'bg-danger']" class="text-white">{{news.SGDClassifier | explain}}</td>
+							<td v-bind:class="[news.LogisticRegression==1 ? 'bg-primary' : 'bg-danger']" class="text-white">{{news.LogisticRegression | explain}}</td>
+							<td v-bind:class="[news.RandomForestClassifier==1 ? 'bg-primary' : 'bg-danger']" class="text-white">{{news.RandomForestClassifier | explain}}</td>
+							<td v-bind:class="[news.SVC==1 ? 'bg-primary' : 'bg-danger']" class="text-white">{{news.SVC | explain}}</td>
+							<td v-bind:class="[news.XGBClassifier==1 ? 'bg-primary' : 'bg-danger']" class="text-white">{{news.XGBClassifier | explain}}</td>
+							<td v-bind:class="[news.KNeighborsClassifier==1 ? 'bg-primary' : 'bg-danger']" class="text-white">{{news.KNeighborsClassifier | explain}}</td>
+							<td >{{toplam2(news)}}</td>
+						</tr>
+						<!-- <tr>
+						</tr> -->
+						</tbody>
+					</table>
+
+			</form>
+			
+		</div>
+
+		<span class="contact100-more">
+				Sirius project
+		</span>
+	</div>
+
+
+
+	<div id="dropDownSelect1"></div>
+
+<!--===============================================================================================-->
+	<script src="vendor/jquery/jquery-3.2.1.min.js"></script>
+<!--===============================================================================================-->
+	<script src="vendor/bootstrap/js/popper.js"></script>
+	<script src="vendor/bootstrap/js/bootstrap.min.js"></script>
+<!--===============================================================================================-->
+	<script src="vendor/select2/select2.min.js"></script>
+<!--===============================================================================================-->
+	<script src="js/main.js"></script>
+<!--===============================================================================================-->
+<!--===============================================================================================-->
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.0"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+	
+	<script>
+		new Vue({
+			el: '#app',
+			data: function(){
+				return {
+					message: 'Hello Nader',
+					title: '',
+					text: '',
+					sonuc : null,
+					fakenews: null,
+					realnews: null,
+					loading: false
+				}
+			},
+			methods: {
+				getfakes: function(){
+					// getting latest 10 news from fake news site and make prediction on them 
+					let link = 'http://127.0.0.1:5002/fakes'
+					this.sonuc = null
+					this.fakenews = null
+					axios
+					.get(link)
+					.then(response => {this.fakenews = response.data;})
+				},
+				getreals: function(){
+					// getting latest 10 news from BBC news site and make prediction on them 
+					let link = 'http://127.0.0.1:5002/reals'
+					this.sonuc = null
+					this.fakenews = null
+					axios
+					.get(link)
+					.then(response => {this.fakenews = response.data;})
+				},
+				prediction: function(){
+					// making manual prediction from user inputs
+					this.sonuc = null
+					this.fakenews = null
+					let parameters = {
+						title: this.title,
+						text: this.text
+					}
+					let fetchData = { 
+						method: 'POST', 
+						body: parameters,
+					}
+					let link = 'http://127.0.0.1:5002/predict'
+					axios
+					.post(link,parameters)
+					.then(response => (this.sonuc = response.data))
+				},
+				toplam: function(){
+					// calculating the propabilities across models and classes
+					let fakes=0 
+					let reals=0
+					reals = parseInt(this.sonuc.MultinomialNB) + 
+					parseInt(this.sonuc.SGDClassifier) +
+					parseInt(this.sonuc.LogisticRegression) +
+					parseInt(this.sonuc.RandomForestClassifier) +
+					parseInt(this.sonuc.SVC) +
+					parseInt(this.sonuc.XGBClassifier) +
+					parseInt(this.sonuc.KNeighborsClassifier); 
+					fakes = 7 - reals
+					let possibility1 = fakes*100/(fakes+reals)
+					possibility1 = possibility1.toFixed(1)
+					let possibility2 =100-possibility1
+					possibility2 = possibility2.toFixed(1)
+
+				return `${possibility1}% Fake / ${possibility2}% Real`
+				},
+				toplam2: function(news){
+					let fakes=0 
+					let reals=0
+					reals = parseInt(news.MultinomialNB) + 
+					parseInt(news.SGDClassifier) +
+					parseInt(news.LogisticRegression) +
+					parseInt(news.RandomForestClassifier) +
+					parseInt(news.SVC) +
+					parseInt(news.XGBClassifier) +
+					parseInt(news.KNeighborsClassifier); 
+					fakes = 7 - reals
+					let possibility1 = fakes*100/(fakes+reals)
+					possibility1 = possibility1.toFixed(1)
+					let possibility2 =100-possibility1
+					possibility2 = possibility2.toFixed(1)
+
+				return `${possibility1}%F/ ${possibility2}%R`
+				}
+			},
+			filters: {
+				explain: function (value) {
+					if (value == 0) return 'Fake'
+					else return 'Real'
+				}
+			},
+					
+			})
+	</script>
+
+</body>
+</html>
